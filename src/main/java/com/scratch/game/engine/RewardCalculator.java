@@ -1,17 +1,30 @@
 package com.scratch.game.engine;
 
 import com.scratch.game.config.GameConfig;
-import com.scratch.game.domain.Symbol;
-import com.scratch.game.domain.SymbolType;
-import com.scratch.game.domain.WinCombination;
+import com.scratch.game.model.Symbol;
+import com.scratch.game.model.SymbolType;
+import com.scratch.game.model.WinCombination;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * Calculates the total reward for a game based on the bet amount, winning combinations, 
+ * the generated matrix, and the game configuration.
+ */
 public class RewardCalculator {
 
+  /**
+   * Computes the total reward for the game.
+   *
+   * @param bet the amount of the bet
+   * @param wins a map of winning symbol names to their associated winning combinations
+   * @param matrix the generated game matrix
+   * @param cfg the game configuration
+   * @return the total reward, rounded to the nearest whole number
+   */
   public double compute(double bet,
       Map<String, List<String>> wins,
       String[][] matrix,
@@ -24,7 +37,6 @@ public class RewardCalculator {
       Symbol sym = cfg.getSymbols().get(symbolName);
 
       double reward = bet * sym.getRewardMultiplier();
-      // multiply by each UNIQUE win-group once
       Set<String> appliedGroups = new HashSet<>();
       for (String comboId : e.getValue()) {
         WinCombination wc = cfg.getWinCombinations().get(comboId);
@@ -35,7 +47,6 @@ public class RewardCalculator {
       total += reward;
     }
 
-    // Bonus symbol impact (only if SOME win exists)
     if (!wins.isEmpty()) {
       Optional<Symbol> bonusOpt = findBonus(matrix, cfg);
       if (bonusOpt.isPresent()) {
@@ -53,9 +64,16 @@ public class RewardCalculator {
         }
       }
     }
-    return Math.round(total);  // integral prizes
+    return Math.round(total);
   }
 
+  /**
+   * Finds the first bonus symbol in the game matrix.
+   *
+   * @param m the game matrix
+   * @param cfg the game configuration
+   * @return an {@link Optional} containing the bonus symbol if found, or empty if no bonus symbol is present
+   */
   private Optional<Symbol> findBonus(String[][] m, GameConfig cfg) {
     for (String[] row : m) {
       for (String cell : row) {

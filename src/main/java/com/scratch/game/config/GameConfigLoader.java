@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
+import com.scratch.game.model.ProbabilityCell;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
@@ -25,6 +26,7 @@ public final class GameConfigLoader {
         .enable(JsonReadFeature.ALLOW_TRAILING_COMMA)
         .build();
 
+
     GameConfig cfg = mapper.readValue(path.toFile(), GameConfig.class);
 
     initialiseWinCombinations(cfg);
@@ -33,36 +35,29 @@ public final class GameConfigLoader {
     return cfg;
   }
 
-  /* -------------------------------------------------------------- */
-  /* 1) give each WinCombination its ID + parse covered_areas        */
-  /* -------------------------------------------------------------- */
   private static void initialiseWinCombinations(GameConfig cfg) {
     cfg.getWinCombinations().forEach((id, wc) -> wc.initialise(id));
   }
 
-  /* -------------------------------------------------------------- */
-  /* 2) if the JSON omits some probability cells, clone (0,0)        */
-  /* -------------------------------------------------------------- */
-  private static void fillMissingProbabilityCells(GameConfig cfg) {
-    List<GameConfig.ProbabilityCell> cells = cfg.getProbabilityCells();
-    if (cells.isEmpty()) return; // nothing we can do
 
-    // index existing cells by row+col for O(1) look‑ups
-    Map<String, GameConfig.ProbabilityCell> index = new HashMap<>();
-    for (GameConfig.ProbabilityCell pc : cells) {
+  private static void fillMissingProbabilityCells(GameConfig cfg) {
+    List<ProbabilityCell> cells = cfg.getProbabilityCells();
+    if (cells.isEmpty()) return;
+
+    Map<String, ProbabilityCell> index = new HashMap<>();
+    for (ProbabilityCell pc : cells) {
       index.put(key(pc.getRow(), pc.getColumn()), pc);
     }
 
-    // baseline distribution → copy from first declared cell
-    Map<String,Integer> baseline = new HashMap<>(cells.get(0).getWeights());
+    Map<String,Integer> baseline = new HashMap<>(cells.get(0).getSymbols());
 
     for (int r = 0; r < cfg.getRows(); r++) {
       for (int c = 0; c < cfg.getColumns(); c++) {
         if (!index.containsKey(key(r, c))) {
-          GameConfig.ProbabilityCell clone = new GameConfig.ProbabilityCell();
-          clone.row = r;   // package‑private access ok – nested class
-          clone.column = c;
-          clone.symbols = new HashMap<>(baseline);
+          ProbabilityCell clone = new ProbabilityCell();
+          clone.setRow(r);
+          clone.setColumn(c);
+          clone.setSymbols(new HashMap<>(baseline));
           cells.add(clone);
         }
       }

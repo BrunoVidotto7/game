@@ -1,7 +1,7 @@
 package com.scratch.game.engine;
 
 import com.scratch.game.config.GameConfig;
-import com.scratch.game.config.GameConfig.ProbabilityCell;
+import com.scratch.game.model.ProbabilityCell;
 import com.scratch.game.util.WeightedRandom;
 
 import java.security.SecureRandom;
@@ -29,19 +29,12 @@ public class MatrixGenerator {
     int cols = cfg.getColumns();
     String[][] matrix = new String[rows][cols];
 
-    /* --------------------------------------------------------- */
-    /* 1) Fill every cell with a STANDARD symbol using its       */
-    /*    individual probability distribution.                   */
-    /* --------------------------------------------------------- */
     for (ProbabilityCell cell : cfg.getProbabilityCells()) {
       int r = cell.getRow();
       int c = cell.getColumn();
-      matrix[r][c] = pick(cell.getWeights());
+      matrix[r][c] = pick(cell.getSymbols());
     }
-
-    /* Safety: if the config had gaps we still fill them using   */
-    /* the baseline distribution from (0,0).                     */
-    Map<String,Integer> baseline = cfg.getProbabilityCells().get(0).getWeights();
+    Map<String,Integer> baseline = cfg.getProbabilityCells().get(0).getSymbols();
     for (int r = 0; r < rows; r++) {
       for (int c = 0; c < cols; c++) {
         if (matrix[r][c] == null) {
@@ -50,9 +43,6 @@ public class MatrixGenerator {
       }
     }
 
-    /* --------------------------------------------------------- */
-    /* 2) Overwrite a random cell with a BONUS symbol.           */
-    /* --------------------------------------------------------- */
     int br = rnd.nextInt(rows);
     int bc = rnd.nextInt(cols);
     matrix[br][bc] = pick(cfg.getBonusWeights());
@@ -60,7 +50,6 @@ public class MatrixGenerator {
     return matrix;
   }
 
-  /* Helper: pick one key according to weight map */
   private String pick(Map<String,Integer> weights) {
     WeightedRandom<String> wr = new WeightedRandom<>();
     weights.forEach((sym, w) -> wr.add(w, sym));

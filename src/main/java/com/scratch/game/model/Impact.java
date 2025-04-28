@@ -1,4 +1,4 @@
-package com.scratch.game.domain;
+package com.scratch.game.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -15,13 +15,11 @@ public enum Impact {
     this.json = json;
   }
 
-  /** serialise to the same string the JSON config uses */
   @JsonValue
   public String value() {
     return json;
   }
 
-  /** deserialise from JSON (case-insensitive) */
   @JsonCreator
   public static Impact fromJson(String v) {
     for (Impact i : values()) {

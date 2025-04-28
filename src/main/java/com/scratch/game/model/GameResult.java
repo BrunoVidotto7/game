@@ -1,5 +1,6 @@
-package com.scratch.game.domain;
+package com.scratch.game.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -12,8 +13,10 @@ import java.util.Map;
 public class GameResult {
   public final String[][] matrix;
   public final double reward;
-  public final Map<String, List<String>> applied_winning_combinations; // symbol -> list(ids)
-  public final String applied_bonus_symbol; // may be null
+  @JsonProperty("applied_winning_combinations")
+  public final Map<String, List<String>> appliedWinningCombinations;
+  @JsonProperty("applied_bonus_symbol")
+  public final String appliedBonusSymbol;
 
   public GameResult(String[][] matrix,
       double reward,
@@ -21,11 +24,10 @@ public class GameResult {
       String bonusSymbol) {
     this.matrix = matrix;
     this.reward = reward;
-    this.applied_winning_combinations = appliedWinning;
-    this.applied_bonus_symbol = bonusSymbol;
+    this.appliedWinningCombinations = appliedWinning;
+    this.appliedBonusSymbol = bonusSymbol;
   }
 
-  /** Pretty JSON string for CLI output */
   public String toPrettyJson() {
     ObjectMapper mapper = new ObjectMapper();
     try {
